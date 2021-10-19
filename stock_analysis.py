@@ -257,43 +257,53 @@ def calc_mse(input_df):
     mse = mean_squared_error(actual_arr, pred_arr)
     return mse
 
-
+debug_mode=True
 def main():
-    # Set up arg_parser to handle inputs
-    arg_parser = argparse.ArgumentParser()
+    if not debug_mode:
+        # Set up arg_parser to handle inputs
+        arg_parser = argparse.ArgumentParser()
 
-    # Parse console inputs
-    arg_parser.add_argument("-n", "--stock_name", required=True, type=str,
-                            help="Takes in the name of a stock in the form XXXX e.g. AAPL. 'AAPL' will fail.")
-    arg_parser.add_argument("-s", "--start_date", required=True, type=str,
-                            help="Takes in the start date of the time period being evaluated. Please input dates in the"
-                                 "following way: 'year-month-day'")
-    arg_parser.add_argument("-e", "--end_date", required=True, type=str,
-                            help="Takes in the end date of the time period being evaluated. Please input dates in the"
-                                 "following way: 'year-month-day'")
-    arg_parser.add_argument("-o", "--out_dir", type=str, default=None,
-                            help="Directory to save the CSV file that contains the actual stock prices along with the "
-                                 "predictions for a given day.")
-    arg_parser.add_argument("-p", "--plot", type=check_bool, nargs='?', const=True, default=False,
-                            help="Optional: Boolean flag specifying if the results should be plotted or not.")
-    arg_parser.add_argument("-f", "--future", type=int, default=None,
-                            help="Optional: Value specifying how far in the future the user would like predictions.")
-    arg_parser.add_argument("-m", "--metrics", type=check_bool, nargs='?', const=True, default=False,
-                            help='Optional: Boolean flag specifying that the user would like to see how accurate the '
-                                 'model is at predicting prices in the testing dataset for which real data exists, i.e. '
-                                 'dates before -e. This slows down prediction as all test days will have their close '
-                                 'prices predicted, as opposed to just the future days, but provides a metric to score '
-                                 'the HMM (Mean Squared Error). ')
-    args = arg_parser.parse_args()
+        # Parse console inputs
+        arg_parser.add_argument("-n", "--stock_name", required=True, type=str,
+                                help="Takes in the name of a stock in the form XXXX e.g. AAPL. 'AAPL' will fail.")
+        arg_parser.add_argument("-s", "--start_date", required=True, type=str,
+                                help="Takes in the start date of the time period being evaluated. Please input dates in the"
+                                    "following way: 'year-month-day'")
+        arg_parser.add_argument("-e", "--end_date", required=True, type=str,
+                                help="Takes in the end date of the time period being evaluated. Please input dates in the"
+                                    "following way: 'year-month-day'")
+        arg_parser.add_argument("-o", "--out_dir", type=str, default=None,
+                                help="Directory to save the CSV file that contains the actual stock prices along with the "
+                                    "predictions for a given day.")
+        arg_parser.add_argument("-p", "--plot", type=check_bool, nargs='?', const=True, default=False,
+                                help="Optional: Boolean flag specifying if the results should be plotted or not.")
+        arg_parser.add_argument("-f", "--future", type=int, default=None,
+                                help="Optional: Value specifying how far in the future the user would like predictions.")
+        arg_parser.add_argument("-m", "--metrics", type=check_bool, nargs='?', const=True, default=False,
+                                help='Optional: Boolean flag specifying that the user would like to see how accurate the '
+                                    'model is at predicting prices in the testing dataset for which real data exists, i.e. '
+                                    'dates before -e. This slows down prediction as all test days will have their close '
+                                    'prices predicted, as opposed to just the future days, but provides a metric to score '
+                                    'the HMM (Mean Squared Error). ')
+        args = arg_parser.parse_args()
 
-    # Set variables from arguments
-    company_name = args.stock_name
-    start = args.start_date
-    end = args.end_date
-    future = args.future
-    metrics = args.metrics
-    plot = args.plot
-
+        # Set variables from arguments
+        company_name = args.stock_name
+        start = args.start_date
+        end = args.end_date
+        future = args.future
+        metrics = args.metrics
+        plot = args.plot
+        out_dir = args.out_dir
+    else:
+        # Set variables from arguments
+        company_name = 'TQQQ'
+        start = '03-02-2021'
+        end = '10-11-2021'
+        future = 10
+        metrics = True
+        plot = True
+        out_dir = None
     # Handle empty input case
     if not metrics and future is None:
         print("No outputs selected as both historical predictions and future predictions are empty/None. Please repeat "
@@ -301,10 +311,10 @@ def main():
         sys.exit()
 
     # Use the current working directory for saving if there is no input
-    if args.out_dir is None:
+    if out_dir is None:
         out_dir = os.getcwd()
     else:
-        out_dir = args.out_dir
+        out_dir = out_dir
 
     # Correct incorrect inputs. Inputs should be of the form XXXX, but handle cases when users input 'XXXX'
     if company_name[0] == '\'' and company_name[-1] == '\'':
